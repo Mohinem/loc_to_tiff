@@ -20,7 +20,7 @@ The best way is to run loc_to_raster_complete.py is by command line.
 
 Format of command-
 
-python3 loc_to_raster_complete.py <input file name> <tiff file name>
+python3 loc_to_raster_complete.py "input_file name" "tiff file name"
 
 
 Please ask if any questions !
