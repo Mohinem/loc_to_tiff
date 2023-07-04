@@ -43,7 +43,7 @@ def convert_numpy_to_raster(numpy_array, output_file):
     for i in range(num_dates):
         output_band = output_raster.GetRasterBand(i + 1)
         output_band.WriteArray(raster_data[i])
-        output_band.SetDescription(unique_dates[i])
+        output_band.SetDescription("Number of Lightning Strikes")
         output_band.SetMetadata({'_Slice': 'Count'})
     output_raster.FlushCache()
 
