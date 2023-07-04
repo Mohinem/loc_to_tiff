@@ -39,6 +39,14 @@ def convert_numpy_to_raster(numpy_array, output_file):
     # Set axis names
     output_raster.SetMetadata({'_Axes': 'Date Lat Long'})
 
+    # Set the geotransform for the raster
+    x_origin = unique_longitudes.min()
+    y_origin = unique_latitudes.min()
+    x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
+    y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes
+    output_raster.SetGeoTransform([x_origin, x_resolution, 0, y_origin, 0, y_resolution])
+
+
     # Write data to raster bands
     for i in range(num_dates):
         output_band = output_raster.GetRasterBand(i + 1)
