@@ -21,7 +21,13 @@ def intermediate_to_final(intermediate_file_name, final_file_name):
         elements = each_line.split(',')
         timestamp_value, lat, lon= [e.strip() for e in elements]
 
-        date_value = datetime.datetime.fromtimestamp(int(timestamp_value)).strftime('%d-%m-%y')
+        # date_value = datetime.datetime.fromtimestamp(int(timestamp_value)).strftime('%d-%m-%y')
+        # Convert timestamp_value to datetime object
+        timestamp_dt = datetime.datetime.fromtimestamp(int(timestamp_value))
+
+        # Modify the timestamp to have "00" as the last two digits and add a "Z" sign
+        date_value = timestamp_dt.replace(second=0, microsecond=0).isoformat() + "Z"
+
         dict_tuple = (date_value, lat, lon)
 
         if dict_tuple not in count_dict:
