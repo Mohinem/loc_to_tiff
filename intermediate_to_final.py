@@ -26,7 +26,7 @@ def intermediate_to_final(intermediate_file_name, final_file_name):
         timestamp_dt = datetime.datetime.fromtimestamp(int(timestamp_value))
 
         # Modify the timestamp to have "00" as the last two digits and add a "Z" sign
-        date_value = timestamp_dt.replace(minute=0, second=0, microsecond=0).isoformat() + "Z"
+        date_value = timestamp_dt.replace(minute=0, second=0, microsecond=0).isoformat() + "0" + "Z"
 
         dict_tuple = (date_value, lat, lon)
 
