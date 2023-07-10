@@ -1,7 +1,8 @@
 import numpy as np
 from osgeo import gdal
+import os
 
-def convert_numpy_to_raster(numpy_array, output_file):
+def convert_numpy_to_raster(numpy_array):
     # Extract the relevant columns from the input dataset
     dates = numpy_array[1:, 0]
     latitudes = numpy_array[1:, 1].astype(float)
@@ -13,49 +14,57 @@ def convert_numpy_to_raster(numpy_array, output_file):
     unique_latitudes = np.unique(latitudes)
     unique_longitudes = np.unique(longitudes)
 
-    # Create a raster data array with appropriate dimensions
-    num_dates = len(unique_dates)
-    num_latitudes = len(unique_latitudes)
-    num_longitudes = len(unique_longitudes)
-    raster_data = np.zeros((num_dates, num_latitudes, num_longitudes), dtype=int)
+    raster_2d_array = []
 
-    # Convert the date, latitude, and longitude values to indices
-    date_indices = np.searchsorted(unique_dates, dates)
-    latitude_indices = np.searchsorted(unique_latitudes, latitudes)
-    longitude_indices = np.searchsorted(unique_longitudes, longitudes)
-
-    # Populate the raster data array with count values
-    for i in range(len(counts)):
-        date_index = date_indices[i]
-        latitude_index = latitude_indices[i]
-        longitude_index = longitude_indices[i]
-        count = counts[i]
-        raster_data[date_index, latitude_index, longitude_index] = count
-
-    # Write the raster data to a raster file using GDAL
-    driver = gdal.GetDriverByName('GTiff')
-    output_raster = driver.Create(output_file, num_longitudes, num_latitudes, num_dates, gdal.GDT_Int32)
-
-    # Set axis names
-    output_raster.SetMetadata({'_Axes': 'Date Lat Long'})
-
-    # Set the geotransform for the raster
-# Set the geotransform for the raster
-    x_origin = unique_longitudes.min()
-    y_origin = unique_latitudes.max()  # Swap the y-origin value
-    x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
-    y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes
-    output_raster.SetGeoTransform([x_origin, x_resolution, 0, y_origin, 0, -y_resolution])  # Use -y_resolution to flip the y-axis
+    output_dir = os.getcwd() + '/output/'
+    os.makedirs(output_dir, exist_ok=True)
 
 
+    for each_date in unique_dates:
+        # Find the indices of the records that match the current date
+        indices = np.where(dates == each_date)[0]
 
-    # Write data to raster bands
-    for i in range(num_dates):
-        output_band = output_raster.GetRasterBand(i + 1)
-        output_band.WriteArray(raster_data[i])
+        num_latitudes = len(unique_latitudes)
+        num_longitudes = len(unique_longitudes)
+
+        # Create a temporary array to store the counts for the current date
+        temp_array = np.zeros((num_latitudes, num_longitudes), dtype=int)
+
+        # Loop through the indices and insert the counts into the temporary array
+        for index in indices:
+            lat_index = np.where(unique_latitudes == latitudes[index])[0][0]
+            lon_index = np.where(unique_longitudes == longitudes[index])[0][0]
+            temp_array[lat_index, lon_index] = counts[index]
+
+        raster_2d_array.append(temp_array)
+
+        # Create the output directory for the current date
+
+        # Create the output raster for the current date
+        output_file_string = output_dir + each_date + '.tiff'
+        driver = gdal.GetDriverByName('GTiff')
+        output_raster = driver.Create(output_file_string, num_longitudes, num_latitudes, 1, gdal.GDT_Int32)
+
+        # Set the geotransform for the raster
+        x_origin = unique_longitudes.min()
+        y_origin = unique_latitudes.max()  # Swap the y-origin value
+        x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
+        y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes
+        output_raster.SetGeoTransform([x_origin, x_resolution, 0, y_origin, 0, -y_resolution])
+
+        output_raster.SetMetadata({'_Axes': 'Lat Long'})
+
+        output_band = output_raster.GetRasterBand(1)
+        # print("Temp array - ")
+        # print(temp_array)
+        # # print("Size -")
+        # # print(temp_array.size)
+        # print("Number of non zero values = " + str(np.count_nonzero(temp_array)))
+        # print("Number of zero values = " + str(int(temp_array.size) - int(np.count_nonzero(temp_array))))
+        output_band.WriteArray(temp_array)
         output_band.SetDescription("Number of Lightning Strikes")
         output_band.SetMetadata({'_Slice': 'Count'})
-    output_raster.FlushCache()
+
 
 
 def csv_to_numpy(final_file_name):
@@ -65,8 +74,8 @@ def csv_to_numpy(final_file_name):
     return csv_data
 
 
-# final_file_name = 'final_file.csv'
-# raster_file_name = 'current_raster_file.tiff'
+final_file_name = 'final_file.csv'
+raster_file_name = 'final_tiff_file.tiff'
 
 
-# convert_numpy_to_raster(csv_to_numpy(final_file_name), raster_file_name)
+# convert_numpy_to_raster(csv_to_numpy(final_file_name))
