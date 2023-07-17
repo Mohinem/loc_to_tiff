@@ -58,7 +58,7 @@ def convert_numpy_to_raster(numpy_array):
 
         x_offset = 20
         y_offset = 0
-        output_raster.SetGeoTransform([x_origin + x_offset, 0.1, 0, y_origin + y_offset, -0.1, 0])
+        output_raster.SetGeoTransform([x_origin + x_offset, 0.1, 0, y_origin + y_offset, 0, -0.1])
 
         # output_raster.SetGeoTransform((-130, 0.10, 0.0, 91.6, 0.0, -0.1))
 
