@@ -20,9 +20,13 @@ def convert_numpy_to_raster(numpy_array):
     os.makedirs(output_dir, exist_ok=True)
 
 
+    print(str(unique_latitudes.min()) + " , " + str(unique_latitudes.max()))
+    print(str(unique_longitudes.min()) + " , " + str(unique_longitudes.max()))
+
     for each_date in unique_dates:
         # Find the indices of the records that match the current date
         indices = np.where(dates == each_date)[0]
+        print(np.where(dates == each_date)[0])
 
         num_latitudes = len(unique_latitudes)
         num_longitudes = len(unique_longitudes)
@@ -50,11 +54,21 @@ def convert_numpy_to_raster(numpy_array):
         y_origin = unique_latitudes.max()  # Swap the y-origin value
         x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
         y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes
-        output_raster.SetGeoTransform([x_origin, x_resolution, 0, y_origin, 0, -y_resolution])
+
+
+        x_offset = 20
+        y_offset = 0
+        output_raster.SetGeoTransform([x_origin + x_offset, x_resolution, 0, y_origin + y_offset, 0, -y_resolution])
+
+        # output_raster.SetGeoTransform((-130, 0.10, 0.0, 91.6, 0.0, -0.1))
+
+        geotransform = output_raster.GetGeoTransform()
+        print(geotransform)
 
         output_raster.SetMetadata({'_Axes': 'Lat Long'})
 
         output_band = output_raster.GetRasterBand(1)
+        output_band.SetNoDataValue(0)  # Set nodata value to 0
         # print("Temp array - ")
         # print(temp_array)
         # # print("Size -")
@@ -64,6 +78,7 @@ def convert_numpy_to_raster(numpy_array):
         output_band.WriteArray(temp_array)
         output_band.SetDescription("Number of Lightning Strikes")
         output_band.SetMetadata({'_Slice': 'Count'})
+        # break
 
 
 
@@ -74,8 +89,8 @@ def csv_to_numpy(final_file_name):
     return csv_data
 
 
-final_file_name = 'final_file.csv'
-raster_file_name = 'final_tiff_file.tiff'
+# final_file_name = 'final_file.csv'
+# raster_file_name = 'final_tiff_file.tiff'
 
 
 # convert_numpy_to_raster(csv_to_numpy(final_file_name))
