@@ -44,6 +44,8 @@ def intermediate_to_final(intermediate_file_name, final_file_name):
         final_file.write(final_string)
         # print(final_string)
 
+    final_file.close()
+
 
 
 
