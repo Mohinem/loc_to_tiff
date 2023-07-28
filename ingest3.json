@@ -1,0 +1,34 @@
+{
+  "config": {
+    "default_crs": "http://localhost:8080/def/crs/EPSG/0/4326",
+    "service_url": "http://localhost:8080/rasdaman/ows",
+    "tmp_directory": "/tmp/",
+    "mock": false,
+    "automated": true,
+    "track_files": false,
+    "subset_correction": false,
+    "insitu": false
+  },
+  "input": {
+    "coverage_id": "global_wwlln_lightning_new",
+    "paths": [
+      "/home/rasdaman/loc_to_tiff/output/*.tiff"
+    ]
+  },
+  "recipe": {
+    "name": "time_series_irregular",
+    "options": {
+      "wms_import": true,
+      "time_parameter" :{
+        "filename": {
+          "regex": "(.*).tiff",
+          "group": "1"
+        },
+        "datetime_format": "YYYY-MM-DDTHH"
+      },
+      "time_crs": "http://localhost:8080/rasdaman/def/crs/OGC/0/AnsiDate?axis-label=\"time\"",
+      "tiling": "ALIGNED [0:0,0:1023, 0:1023]"
+    }
+  }
+}
+

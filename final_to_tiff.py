@@ -16,8 +16,13 @@ def convert_numpy_to_raster(numpy_array):
 
     raster_2d_array = []
 
+    # Create a directory 'output' to save output tiff files
     output_dir = os.getcwd() + '/output/'
     os.makedirs(output_dir, exist_ok=True)
+
+    # Create a directory 'output_csv' to save the lat/long values in the tiff files as csv files
+    output_csv_dir = os.getcwd() + '/output_csv/'
+    os.makedirs(output_csv_dir, exist_ok=True)
 
 
     print(str(unique_latitudes.min()) + " , " + str(unique_latitudes.max()))
@@ -34,31 +39,52 @@ def convert_numpy_to_raster(numpy_array):
         # Create a temporary array to store the counts for the current date
         temp_array = np.zeros((num_latitudes, num_longitudes), dtype=int)
 
-        # Loop through the indices and insert the counts into the temporary array
-        for index in indices:
-            lat_index = np.where(unique_latitudes == latitudes[index])[0][0]
-            lon_index = np.where(unique_longitudes == longitudes[index])[0][0]
-            temp_array[lat_index, lon_index] = counts[index]
+        # Create a csv file in the 'output_csv_dir' location, storing lat/long values
+        output_csv_file_string = output_csv_dir + each_date + '.csv'
+        output_csv_file = open(output_csv_file_string, 'w')
 
-        raster_2d_array.append(temp_array)
+        # Create a csv file in the 'output_csv_dir' location, storing lat/long and time values
+        output_csv_file_string_with_count = output_csv_dir + each_date + '_count.csv'
+        output_csv_file_with_count = open(output_csv_file_string_with_count, 'w')
 
-        # Create the output directory for the current date
+        # Set the geotransform for the raster
+        x_origin = unique_longitudes.min()
+        y_origin = unique_latitudes.max()  # Swap the y-origin value
+        x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
+        y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes  
+
 
         # Create the output raster for the current date
         output_file_string = output_dir + each_date + '.tiff'
         driver = gdal.GetDriverByName('GTiff')
         output_raster = driver.Create(output_file_string, num_longitudes, num_latitudes, 1, gdal.GDT_Int32)
 
-        # Set the geotransform for the raster
-        x_origin = unique_longitudes.min()
-        y_origin = unique_latitudes.max()  # Swap the y-origin value
-        x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
-        y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes
-
-
-        x_offset = 20
+        x_offset = 0
         y_offset = 0
-        output_raster.SetGeoTransform([x_origin + x_offset, 0.1, 0, y_origin + y_offset, 0, -0.1])
+        output_raster.SetGeoTransform([x_origin + x_offset, 0.1, 0, y_origin + y_offset, 0, -0.1])   
+
+        transformer = output_raster.GetGeoTransform()           
+
+        # Loop through the indices and insert the counts into the temporary array
+        # Also, write the temporary index latitude
+        for index in indices:
+            lat_index = np.where(unique_latitudes == latitudes[index])[0][0]
+            lon_index = np.where(unique_longitudes == longitudes[index])[0][0]
+            temp_array[lat_index, lon_index] = counts[index]
+            str_1 = str(unique_latitudes[lat_index]) + ',' + str(unique_longitudes[lon_index]) + '\n'
+            output_csv_file.write(str_1)
+            str_2 = str(unique_latitudes[lat_index]) + ',' + str(unique_longitudes[lon_index]) + ',' + str(counts[index]) + '\n'
+            output_csv_file_with_count.write(str_2)
+            print('(' + str(unique_latitudes[lat_index]) + ',' + str(unique_longitudes[lon_index]) + '),(' + )
+            
+
+        output_csv_file.close()
+        output_csv_file_with_count.close()
+
+        raster_2d_array.append(temp_array)
+
+        # Create the output directory for the current date
+
 
         # output_raster.SetGeoTransform((-130, 0.10, 0.0, 91.6, 0.0, -0.1))
 
