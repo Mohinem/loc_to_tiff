@@ -57,7 +57,7 @@ def convert_numpy_to_raster(numpy_array):
 
         # Set the geotransform for the raster
         x_origin = unique_longitudes.min()
-        y_origin = unique_latitudes.min()  # Swap the y-origin value
+        y_origin = unique_latitudes.max()  # Swap the y-origin value
         x_resolution = (unique_longitudes.max() - unique_longitudes.min()) / num_longitudes
         y_resolution = (unique_latitudes.max() - unique_latitudes.min()) / num_latitudes  
 
@@ -69,7 +69,7 @@ def convert_numpy_to_raster(numpy_array):
 
         x_offset = 0
         y_offset = 0
-        output_raster.SetGeoTransform([x_origin + x_offset, 0.1, 0, (y_origin + y_offset), 0, 0.1])   
+        output_raster.SetGeoTransform([x_origin + x_offset, 0.1, 0, (y_origin + y_offset), 0, -0.1])   
 
         transformer = output_raster.GetGeoTransform()           
 
@@ -81,7 +81,7 @@ def convert_numpy_to_raster(numpy_array):
         for index in indices:
             lat_index = np.where(unique_latitudes == latitudes[index])[0][0]
             lon_index = np.where(unique_longitudes == longitudes[index])[0][0]
-            temp_array[calc_lat_index(unique_latitudes[lat_index]), calc_long_index(unique_longitudes[lon_index])] = counts[index]
+            temp_array[all_latitudes -1 -calc_lat_index(unique_latitudes[lat_index]), calc_long_index(unique_longitudes[lon_index])] = counts[index]
             str_1 = str(unique_latitudes[lat_index]) + ',' + str(unique_longitudes[lon_index]) + '\n'
             output_csv_file.write(str_1)
             str_2 = str(unique_latitudes[lat_index]) + ',' + str(unique_longitudes[lon_index]) + ',' + str(counts[index]) + '\n'
@@ -128,8 +128,8 @@ def csv_to_numpy(final_file_name):
     return csv_data
 
 
-final_file_name = 'final_file.csv'
+# final_file_name = 'final_file.csv'
 # raster_file_name = 'final_tiff_file.tiff'
 
 
-convert_numpy_to_raster(csv_to_numpy(final_file_name))
+# convert_numpy_to_raster(csv_to_numpy(final_file_name))
